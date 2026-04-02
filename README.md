@@ -1,0 +1,1 @@
+To tell our stories, not only through our deeds, bt simply through our being, is the only probable indelible mark that may survive one's own progeny. This website is my neat little corner of the internet through which my thoughts, words, and deeds may be discovered.
