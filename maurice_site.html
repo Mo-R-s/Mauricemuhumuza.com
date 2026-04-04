@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maurice — Advocate. Builder. Thinker.</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --gold: #C9A84C;
+    --gold-light: #E8C97A;
+    --gold-dim: #7A6030;
+    --black: #080808;
+    --off-white: #F5F2EC;
+    --space-grey: #3A3D45;
+    --space-grey-light: #E8E9EC;
+    --royal-blue: #1B3A6B;
+    --royal-blue-light: #2A5AAB;
+    --text-muted: #7A7872;
+    --border: #DDDBD4;
+  }
+
+  html { scroll-behavior: smooth; }
+  body { background: var(--off-white); color: var(--black); font-family: 'Jost', sans-serif; font-weight: 300; overflow-x: hidden; }
+
+  /* ─── COVER ──────────────────────────────────────── */
+  #cover {
+    position: relative;
+    width: 100%; height: 100vh; min-height: 600px;
+    background: #000;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    overflow: hidden; cursor: pointer;
+  }
+  #matrix-canvas { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0.5; }
+
+  .cover-content { position: relative; z-index: 10; text-align: center; display: flex; flex-direction: column; align-items: center; }
+
+  .cover-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px; color: #00ff41;
+    letter-spacing: 0.4em; text-transform: uppercase;
+    margin-bottom: 20px;
+    opacity: 0; animation: fadeUp 1s 0.6s forwards;
+  }
+
+  .cover-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(60px, 11vw, 120px);
+    font-weight: 300; color: #fff;
+    letter-spacing: 0.02em; line-height: 1;
+    opacity: 0; animation: fadeUp 1.2s 1s forwards;
+  }
+  .cover-name .green { color: #00ff41; }
+
+  .cover-role {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: #00cc33;
+    letter-spacing: 0.3em; margin-top: 18px;
+    opacity: 0; animation: fadeUp 1s 1.5s forwards;
+  }
+
+  .cover-line {
+    width: 1px; height: 56px;
+    background: linear-gradient(to bottom, #00ff41 0%, transparent 100%);
+    margin: 36px auto 0;
+    opacity: 0; animation: fadeUp 0.8s 2s forwards;
+  }
+
+  .enter-btn {
+    margin-top: 28px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: #00ff41;
+    letter-spacing: 0.35em; text-transform: uppercase;
+    padding: 10px 28px;
+    border: 1px solid #00ff41; background: transparent;
+    cursor: pointer;
+    opacity: 0; animation: fadeUp 0.8s 2.4s forwards;
+    transition: background 0.3s;
+  }
+  .enter-btn:hover { background: rgba(0,255,65,0.1); }
+
+  .scroll-hint {
+    position: absolute; bottom: 32px; left: 50%; transform: translateX(-50%);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; color: #009922; letter-spacing: 0.3em;
+    opacity: 0; animation: fadeUp 1s 3s forwards;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── TRANSITION OVERLAY ──────────────────────── */
+  #transition {
+    position: fixed; inset: 0; background: #000; z-index: 999;
+    pointer-events: none; opacity: 0;
+    transition: opacity 0.6s ease;
+  }
+  #transition.active { opacity: 1; pointer-events: all; }
+
+  /* ─── MAIN SITE ───────────────────────────────── */
+  #site { display: none; }
+  #site.visible { display: block; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 60px;
+    background: rgba(245,242,236,0.92);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+  }
+  .nav-logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px; font-weight: 400;
+    color: var(--black); letter-spacing: 0.05em;
+  }
+  .nav-logo span { color: var(--gold); }
+  .nav-links { display: flex; gap: 40px; list-style: none; }
+  .nav-links a {
+    font-family: 'Jost', sans-serif; font-size: 12px;
+    font-weight: 400; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--space-grey);
+    text-decoration: none; transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--black); }
+
+  /* HERO */
+  #hero {
+    min-height: 100vh;
+    display: flex; align-items: center;
+    padding: 140px 60px 80px;
+    background: var(--off-white);
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-inner { max-width: 1100px; margin: 0 auto; width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .hero-text {}
+  .hero-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.3em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 28px;
+  }
+  .hero-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(52px, 6vw, 84px);
+    font-weight: 300; line-height: 1.05;
+    color: var(--black); letter-spacing: -0.01em;
+  }
+  .hero-name em { font-style: italic; color: var(--royal-blue); }
+  .hero-desc {
+    margin-top: 32px;
+    font-size: 16px; font-weight: 300;
+    line-height: 1.8; color: var(--text-muted);
+    max-width: 420px;
+  }
+  .hero-cta {
+    margin-top: 44px; display: flex; gap: 20px; align-items: center;
+  }
+  .btn-primary {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--off-white); background: var(--black);
+    padding: 14px 32px; border: none; cursor: pointer;
+    text-decoration: none; transition: background 0.25s;
+  }
+  .btn-primary:hover { background: var(--royal-blue); }
+  .btn-ghost {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--black);
+    padding: 14px 0; border: none; background: transparent; cursor: pointer;
+    text-decoration: none;
+    border-bottom: 1px solid var(--black);
+    transition: color 0.25s, border-color 0.25s;
+  }
+  .btn-ghost:hover { color: var(--gold); border-color: var(--gold); }
+
+  .hero-visual {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .hero-stat-card {
+    background: var(--black); padding: 28px 32px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .hero-stat-card:nth-child(2) { background: var(--royal-blue); margin-left: 32px; }
+  .hero-stat-card:nth-child(3) { background: var(--space-grey); margin-left: 64px; }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 42px; font-weight: 300; color: var(--gold);
+  }
+  .stat-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* SECTION BASE */
+  section { padding: 100px 60px; }
+  .section-inner { max-width: 1100px; margin: 0 auto; }
+  .section-label {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.35em; text-transform: uppercase;
+    color: var(--gold); margin-bottom: 16px;
+  }
+  .section-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 54px);
+    font-weight: 300; line-height: 1.1;
+    color: var(--black); margin-bottom: 60px;
+  }
+  .section-title em { font-style: italic; color: var(--royal-blue); }
+
+  /* ABOUT */
+  #about { background: #fff; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+  .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .about-portrait {
+    background: var(--space-grey-light);
+    aspect-ratio: 3/4;
+    display: flex; align-items: flex-end; justify-content: flex-start;
+    padding: 24px;
+    position: relative; overflow: hidden;
+  }
+  .about-portrait-placeholder {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-style: italic;
+    color: var(--text-muted);
+  }
+  .portrait-accent {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(to right, var(--gold), var(--royal-blue));
+  }
+  .about-text { padding-top: 8px; }
+  .about-body {
+    font-size: 17px; font-weight: 300; line-height: 1.9;
+    color: var(--space-grey); margin-bottom: 32px;
+  }
+  .about-tags { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 36px; }
+  .tag {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.15em; text-transform: uppercase;
+    padding: 8px 18px;
+    border: 1px solid var(--border); color: var(--space-grey);
+    background: transparent;
+  }
+  .tag.gold { border-color: var(--gold); color: var(--gold-dim); }
+  .tag.blue { border-color: var(--royal-blue-light); color: var(--royal-blue); }
+
+  /* JOURNAL */
+  #journal { background: var(--off-white); }
+  .journal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .journal-card {
+    background: #fff;
+    padding: 36px 32px;
+    border: 1px solid var(--border);
+    transition: border-color 0.25s, transform 0.25s;
+    cursor: pointer;
+    position: relative;
+  }
+  .journal-card:hover { border-color: var(--gold); transform: translateY(-4px); }
+  .journal-card .card-accent {
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: var(--gold); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s;
+  }
+  .journal-card:hover .card-accent { transform: scaleX(1); }
+  .journal-date {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: var(--text-muted);
+    letter-spacing: 0.1em; margin-bottom: 16px;
+  }
+  .journal-cat {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 400;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--royal-blue); margin-bottom: 12px;
+  }
+  .journal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px; font-weight: 400; line-height: 1.3;
+    color: var(--black); margin-bottom: 16px;
+  }
+  .journal-excerpt {
+    font-size: 14px; font-weight: 300; line-height: 1.7;
+    color: var(--text-muted);
+  }
+  .journal-read {
+    display: inline-block; margin-top: 24px;
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--black); text-decoration: none;
+    border-bottom: 1px solid var(--black);
+    padding-bottom: 2px;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .journal-card:hover .journal-read { color: var(--gold); border-color: var(--gold); }
+
+  /* PHOTOGRAPHY */
+  #photography { background: var(--black); padding: 100px 60px; }
+  #photography .section-label { color: var(--gold-dim); }
+  #photography .section-title { color: var(--off-white); }
+  #photography .section-title em { color: var(--gold); }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    grid-template-rows: auto auto;
+    gap: 4px;
+  }
+  .photo-cell {
+    background: var(--space-grey);
+    display: flex; align-items: center; justify-content: center;
+    position: relative; overflow: hidden;
+    transition: opacity 0.3s;
+  }
+  .photo-cell:hover { opacity: 0.85; }
+  .photo-cell.tall { grid-row: span 2; aspect-ratio: 2/3; }
+  .photo-cell.wide { aspect-ratio: 16/9; }
+  .photo-cell.sq { aspect-ratio: 1; }
+  .photo-placeholder {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 13px; font-style: italic;
+    color: rgba(255,255,255,0.25); text-align: center; padding: 20px;
+  }
+  .photo-label {
+    position: absolute; bottom: 16px; left: 16px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px; color: rgba(255,255,255,0.5);
+    letter-spacing: 0.15em; text-transform: uppercase;
+  }
+
+  /* VENTURES */
+  #ventures { background: #fff; border-top: 1px solid var(--border); }
+  .ventures-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .venture-card {
+    padding: 44px 36px;
+    border: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 20px;
+    transition: border-color 0.25s;
+  }
+  .venture-card:hover { border-color: var(--royal-blue-light); }
+  .venture-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 54px; font-weight: 300;
+    color: var(--border); line-height: 1;
+  }
+  .venture-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 400; line-height: 1.2;
+    color: var(--black);
+  }
+  .venture-desc {
+    font-size: 14px; font-weight: 300; line-height: 1.7;
+    color: var(--text-muted); flex: 1;
+  }
+  .venture-link {
+    font-family: 'Jost', sans-serif;
+    font-size: 11px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    color: var(--royal-blue); text-decoration: none;
+    border-bottom: 1px solid var(--royal-blue);
+    padding-bottom: 2px; display: inline-block; width: fit-content;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .venture-card:hover .venture-link { color: var(--gold); border-color: var(--gold); }
+  .venture-tag {
+    font-family: 'Jost', sans-serif;
+    font-size: 10px; font-weight: 400;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    padding: 5px 12px; border: 1px solid;
+    display: inline-block; width: fit-content;
+  }
+  .v-blue { border-color: var(--royal-blue); color: var(--royal-blue); }
+  .v-gold { border-color: var(--gold-dim); color: var(--gold-dim); }
+  .v-grey { border-color: var(--space-grey); color: var(--space-grey); }
+
+  /* CONTACT */
+  #contact {
+    background: var(--black);
+    padding: 120px 60px;
+    text-align: center;
+  }
+  #contact .section-label { color: var(--gold-dim); }
+  .contact-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(42px, 6vw, 80px);
+    font-weight: 300; line-height: 1.1;
+    color: var(--off-white); margin-bottom: 20px;
+  }
+  .contact-title em { font-style: italic; color: var(--gold); }
+  .contact-sub {
+    font-size: 16px; font-weight: 300;
+    color: rgba(245,242,236,0.45);
+    max-width: 440px; margin: 0 auto 56px; line-height: 1.8;
+  }
+  .contact-links { display: flex; justify-content: center; gap: 40px; flex-wrap: wrap; }
+  .contact-link {
+    font-family: 'Jost', sans-serif;
+    font-size: 12px; font-weight: 400;
+    letter-spacing: 0.25em; text-transform: uppercase;
+    color: var(--off-white); text-decoration: none;
+    padding: 14px 32px;
+    border: 1px solid rgba(245,242,236,0.2);
+    transition: border-color 0.25s, color 0.25s;
+  }
+  .contact-link:hover { border-color: var(--gold); color: var(--gold); }
+
+  /* FOOTER */
+  footer {
+    background: var(--black);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 28px 60px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .footer-copy {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px; color: rgba(245,242,236,0.25);
+    letter-spacing: 0.1em;
+  }
+  .footer-mark {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 18px; font-weight: 300;
+    color: var(--gold); letter-spacing: 0.05em;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .nav-links { gap: 24px; }
+    section { padding: 72px 24px; }
+    #hero { padding: 120px 24px 60px; }
+    .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+    .hero-visual { display: none; }
+    .about-grid { grid-template-columns: 1fr; gap: 40px; }
+    .about-portrait { aspect-ratio: 4/3; }
+    .journal-grid { grid-template-columns: 1fr; }
+    .photo-grid { grid-template-columns: 1fr 1fr; }
+    .photo-cell.tall { grid-row: span 1; aspect-ratio: 16/9; }
+    .ventures-grid { grid-template-columns: 1fr; }
+    #contact { padding: 80px 24px; }
+    footer { padding: 20px 24px; flex-direction: column; gap: 12px; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div id="cover" onclick="enterSite()">
+  <canvas id="matrix-canvas"></canvas>
+  <div class="cover-content">
+    <p class="cover-eyebrow">// wake up, Maurice...</p>
+    <h1 class="cover-name">Maur<span class="green">ice</span></h1>
+    <p class="cover-role">Advocate &nbsp;·&nbsp; Builder &nbsp;·&nbsp; Thinker</p>
+    <div class="cover-line"></div>
+    <button class="enter-btn">Enter →</button>
+  </div>
+  <p class="scroll-hint">click anywhere to enter</p>
+</div>
+
+<div id="transition"></div>
+
+<!-- MAIN SITE -->
+<div id="site">
+  <nav>
+    <div class="nav-logo">M<span>.</span></div>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#journal">Journal</a></li>
+      <li><a href="#photography">Photography</a></li>
+      <li><a href="#ventures">Ventures</a></li>
+      <li><a href="#contact">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section id="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <p class="hero-label">Advocate · Entrepreneur · Public Servant</p>
+        <h1 class="hero-name">Where law<br>meets <em>vision</em></h1>
+        <p class="hero-desc">I write, build, and serve. From the courtroom to the boardroom, from Kampala's digital economy to the stars — this is where I document the journey.</p>
+        <div class="hero-cta">
+          <a href="#journal" class="btn-primary">Read the Journal</a>
+          <a href="#about" class="btn-ghost">Learn more</a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="hero-stat-card">
+          <span class="stat-num">3</span>
+          <span class="stat-label">Active Ventures</span>
+        </div>
+        <div class="hero-stat-card">
+          <span class="stat-num">∞</span>
+          <span class="stat-label">Ideas in Motion</span>
+        </div>
+        <div class="hero-stat-card">
+          <span class="stat-num">1</span>
+          <span class="stat-label">True North</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT -->
+  <section id="about">
+    <div class="section-inner">
+      <p class="section-label">The Person</p>
+      <h2 class="section-title">Rooted in principle,<br><em>drawn to possibility</em></h2>
+      <div class="about-grid">
+        <div class="about-portrait">
+          <div class="portrait-accent"></div>
+          <p class="about-portrait-placeholder">Your portrait here</p>
+        </div>
+        <div class="about-text">
+          <p class="about-body">
+            I am an Advocate of the High Court of Uganda — trained to interrogate, argue, and build from first principles. But the courtroom is only one theatre I operate in.
+          </p>
+          <p class="about-body">
+            I am philosophically idealist and pragmatically rooted. I believe institutions matter, that language is architecture, and that good ideas die without execution. So I execute.
+          </p>
+          <p class="about-body">
+            Through Cheza Kwepena, I'm building a bridge between East Africa's youth and its digital future. Through Nondescript Gaming Africa, I'm making the continent a player — not just a market. Through iStartApp, I'm helping ideas become businesses.
+          </p>
+          <p class="about-body">
+            This site is where I think out loud — through journal entries, through images, through honest reflection on what it means to build something that lasts.
+          </p>
+          <div class="about-tags">
+            <span class="tag gold">Advocate</span>
+            <span class="tag blue">Entrepreneur</span>
+            <span class="tag">Esports</span>
+            <span class="tag">Public Service</span>
+            <span class="tag gold">Writer</span>
+            <span class="tag blue">Uganda</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- JOURNAL -->
+  <section id="journal">
+    <div class="section-inner">
+      <p class="section-label">Thoughts & Writing</p>
+      <h2 class="section-title">The <em>Journal</em></h2>
+      <div class="journal-grid">
+        <div class="journal-card">
+          <div class="card-accent"></div>
+          <p class="journal-date">March 2026</p>
+          <p class="journal-cat">Philosophy</p>
+          <h3 class="journal-title">On Building Things That Last</h3>
+          <p class="journal-excerpt">Every institution I've studied began with one person who refused to treat temporariness as a given. What does it mean to build with eternity in mind?</p>
+          <a href="#" class="journal-read">Read entry</a>
+        </div>
+        <div class="journal-card">
+          <div class="card-accent"></div>
+          <p class="journal-date">February 2026</p>
+          <p class="journal-cat">Entrepreneurship</p>
+          <h3 class="journal-title">The Kampala Advantage</h3>
+          <p class="journal-excerpt">What building a company in East Africa teaches you about resilience, improvisation, and finding opportunity in the friction of systems that weren't built for you.</p>
+          <a href="#" class="journal-read">Read entry</a>
+        </div>
+        <div class="journal-card">
+          <div class="card-accent"></div>
+          <p class="journal-date">January 2026</p>
+          <p class="journal-cat">Reflection</p>
+          <h3 class="journal-title">The Space Between Law and Vision</h3>
+          <p class="journal-excerpt">Law teaches you to argue within systems. Vision demands you imagine beyond them. I've spent years learning to hold both — and it remains the most interesting tension I know.</p>
+          <a href="#" class="journal-read">Read entry</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PHOTOGRAPHY -->
+  <section id="photography">
+    <div class="section-inner">
+      <p class="section-label">Through the Lens</p>
+      <h2 class="section-title">What I <em>see</em></h2>
+      <div class="photo-grid">
+        <div class="photo-cell tall">
+          <p class="photo-placeholder">Featured photograph</p>
+          <span class="photo-label">Kampala, 2026</span>
+        </div>
+        <div class="photo-cell wide">
+          <p class="photo-placeholder">Landscape</p>
+          <span class="photo-label">Uganda</span>
+        </div>
+        <div class="photo-cell wide">
+          <p class="photo-placeholder">Portrait</p>
+          <span class="photo-label">People</span>
+        </div>
+        <div class="photo-cell sq">
+          <p class="photo-placeholder">Detail</p>
+          <span class="photo-label">Urban</span>
+        </div>
+        <div class="photo-cell sq">
+          <p class="photo-placeholder">Light</p>
+          <span class="photo-label">Moment</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VENTURES -->
+  <section id="ventures">
+    <div class="section-inner">
+      <p class="section-label">What I'm Building</p>
+      <h2 class="section-title">Active <em>Ventures</em></h2>
+      <div class="ventures-grid">
+        <div class="venture-card">
+          <span class="venture-num">01</span>
+          <div>
+            <span class="venture-tag v-blue">Esports · Gaming</span>
+          </div>
+          <h3 class="venture-name">Cheza Kwepena Federation</h3>
+          <p class="venture-desc">Building a cultural and competitive framework for East Africa's esports scene — through festivals, financial literacy, and grassroots gamedays.</p>
+          <a href="https://kwepena.com" class="venture-link" target="_blank">kwepena.com</a>
+        </div>
+        <div class="venture-card">
+          <span class="venture-num">02</span>
+          <div>
+            <span class="venture-tag v-gold">Gaming · Business</span>
+          </div>
+          <h3 class="venture-name">Nondescript Gaming Africa</h3>
+          <p class="venture-desc">Making Africa a player in the global gaming economy — not just an audience. Strategy, partnerships, and infrastructure for a continent coming online.</p>
+          <a href="https://nondescriptgamingafrica.com" class="venture-link" target="_blank">nondescriptgamingafrica.com</a>
+        </div>
+        <div class="venture-card">
+          <span class="venture-num">03</span>
+          <div>
+            <span class="venture-tag v-grey">Startup · Tech</span>
+          </div>
+          <h3 class="venture-name">iStartApp</h3>
+          <p class="venture-desc">A platform bridging the gap between an idea and a functioning business — tools, guidance, and community for African entrepreneurs at the start line.</p>
+          <a href="https://istartapp.xyz" class="venture-link" target="_blank">istartapp.xyz</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <p class="section-label">Get in Touch</p>
+    <h2 class="contact-title">Let's build<br><em>something real</em></h2>
+    <p class="contact-sub">Whether you're a potential partner, a collaborator, a journalist, or simply curious — I'm open to genuine conversations.</p>
+    <div class="contact-links">
+      <a href="mailto:hello@mauricek.com" class="contact-link">Email</a>
+      <a href="https://linkedin.com" class="contact-link" target="_blank">LinkedIn</a>
+      <a href="https://twitter.com" class="contact-link" target="_blank">X / Twitter</a>
+    </div>
+  </section>
+
+  <footer>
+    <p class="footer-copy">© 2026 Maurice · Kampala, Uganda</p>
+    <p class="footer-mark">M.</p>
+  </footer>
+</div>
+
+<script>
+  // ─── MATRIX RAIN ──────────────────────────────────────
+  const canvas = document.getElementById('matrix-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, cols, drops;
+
+  function initMatrix() {
+    W = canvas.width = canvas.offsetWidth;
+    H = canvas.height = canvas.offsetHeight;
+    const fs = 15;
+    cols = Math.floor(W / fs);
+    drops = Array(cols).fill(1).map(() => Math.random() * -100);
+  }
+
+  const chars = 'アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホ01ABCDEF∞∂∇Ω';
+
+  function drawMatrix() {
+    ctx.fillStyle = 'rgba(0,0,0,0.05)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.font = '14px "Share Tech Mono", monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const c = chars[Math.floor(Math.random() * chars.length)];
+      const brightness = Math.random();
+      if (brightness > 0.97) {
+        ctx.fillStyle = '#ffffff';
+      } else if (brightness > 0.85) {
+        ctx.fillStyle = '#7fff7f';
+      } else {
+        ctx.fillStyle = '#00cc33';
+      }
+      ctx.fillText(c, i * 15, drops[i] * 15);
+      if (drops[i] * 15 > H && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }
+
+  initMatrix();
+  window.addEventListener('resize', initMatrix);
+  const matrixInterval = setInterval(drawMatrix, 45);
+
+  // ─── ENTER SITE ──────────────────────────────────────
+  let entered = false;
+  function enterSite() {
+    if (entered) return;
+    entered = true;
+    const overlay = document.getElementById('transition');
+    overlay.classList.add('active');
+    clearInterval(matrixInterval);
+    setTimeout(() => {
+      document.getElementById('cover').style.display = 'none';
+      document.getElementById('site').classList.add('visible');
+      setTimeout(() => {
+        overlay.classList.remove('active');
+      }, 300);
+    }, 600);
+  }
+
+  // Keyboard enter
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') enterSite();
+  });
+</script>
+</body>
+</html>
